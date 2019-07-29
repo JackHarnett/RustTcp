@@ -8,9 +8,11 @@ use std::str;
 
 mod client;
 mod server;
+mod packet;
 
 use server::Server;
 use client::Client;
+use crate::packet::Packet;
 
 fn handle_client(mut stream : TcpStream) {
     println!("Stream: {}", stream.local_addr().unwrap());
@@ -46,11 +48,16 @@ fn main() -> io::Result<()>{
 
     thread::sleep(time::Duration::from_millis(100));
 
-    let mut client = Client {stream : Client::connect("127.0.0.1".to_string(), 18000).unwrap()};
+    let mut client1 = Client {stream : Client::connect("127.0.0.1".to_string(), 18000).unwrap()};
+    let mut client2 = Client {stream : Client::connect("127.0.0.1".to_string(), 18000).unwrap()};
 
-    client.write_block(b"Hello Server");
-    client.write_block(b"Hello Server 2");
-    client.write_block(b"Hello Server 3");
+    let hello = Packet::new(10, b"Hello World!".to_vec());
+    let world = Packet::new(10, b"Hello World from me!".to_vec());
+    client1.write_packet(&hello);
+    client1.write_packet(&hello);
+    client1.write_packet(&hello);
+
+    client2.write_packet(&world);
 
     server.join();
     Ok(())

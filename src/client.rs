@@ -1,8 +1,12 @@
 use std::net::{TcpListener, TcpStream};
 use std::fmt;
 use std::io;
+use std::io::prelude::*;
+use std::io::{BufReader, BufWriter};
 use std::io::{Read, Write};
 use std::mem;
+use crate::packet::Packet;
+
 
 pub struct Client {
     pub stream : TcpStream,
@@ -37,6 +41,16 @@ impl Client {
         }
 
         self.write(&data);
+    }
+
+    pub fn read(&mut self) {
+        let reader = BufReader::new(&self.stream);
+    }
+
+    pub fn write_packet(&mut self, packet : &Packet) {
+        self.write(&[packet.opcode]);
+        self.write(&[packet.size]);
+        self.write(&packet.payload);
     }
 
 }

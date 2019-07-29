@@ -1,13 +1,19 @@
 use std::mem;
 
 pub struct Packet {
-    opcode : u16,
-    payload : [u8],
+    pub opcode : u8,
+    pub size : u8,
+    pub payload : Vec<u8>,
 }
 
 impl Packet {
 
-    fn num_blocks(&mut self) {
+    pub fn new(opcode : u8, payload : Vec<u8>) -> Packet {
+        Packet {
+            opcode,
+            size : payload.len() as u8,
+            payload : payload
+        }
     }
 
 }
