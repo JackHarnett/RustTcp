@@ -7,6 +7,10 @@ use std::thread;
 use std::str;
 use crossbeam;
 use std::sync::Arc;
+use crate::packet::Packet;
+use std::str::from_utf8;
+use crate::packet_reader::PacketReader;
+use crate::endian::Endianess::*;
 
 pub struct Server {
     pub listener : TcpListener,
@@ -37,12 +41,25 @@ impl<'a> Server {
 
                        reader.read_exact(&mut vec_data);
 
-                       let str_data = str::from_utf8(&vec_data).unwrap();
-
-                       println!("Got packet {} of size {} with data {}", opcode[0], size[0], str_data)
+                       let packet = Packet::new(opcode[0], vec_data);
+                       Server::process_packet(packet);
                    }
                 });
             }
+        }
+    }
+
+    pub fn process_packet(packet : Packet) {
+        match packet.opcode {
+            10 => {
+                println!("Packet data {}", from_utf8(&packet.payload).unwrap());
+            },
+            1 => {
+              let mut reader = PacketReader::new(packet.payload);
+                let v = reader.read_u16(LITTLE);
+                println!("Read {}", v)
+            },
+            _  => println!("Unhandled packet type {}", packet.opcode),
         }
     }
 

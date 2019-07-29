@@ -4,7 +4,9 @@ use std::io;
 use std::io::prelude::*;
 use std::io::{BufReader, BufWriter};
 use std::io::{Read, Write};
+use std::str;
 use std::mem;
+use std::thread;
 use crate::packet::Packet;
 
 
@@ -53,4 +55,27 @@ impl Client {
         self.write(&packet.payload);
     }
 
+    pub fn listen(&mut self) -> Packet {
+        loop {
+            let mut reader = BufReader::new(&self.stream);
+
+            let mut opcode: [u8; 1] = [0 as u8];
+            let mut size: [u8; 1] = [0 as u8];
+
+            reader.read_exact(&mut opcode);
+            reader.read_exact(&mut size);
+
+            let mut vec_data = vec![0 as u8; size[0] as usize];
+
+            reader.read_exact(&mut vec_data);
+
+            println!("Got packet {} of size {}", opcode[0], size[0]);
+
+            return Packet::new(opcode[0], vec_data)
+        }
+    }
+
+    pub fn handle_packet_10(&self, data : Vec<u8>) {
+
+    }
 }

@@ -9,10 +9,15 @@ use std::str;
 mod client;
 mod server;
 mod packet;
+mod packet_reader;
+mod packet_writer;
+mod endian;
 
 use server::Server;
 use client::Client;
 use crate::packet::Packet;
+use crate::packet_writer::PacketWriter;
+use crate::endian::Endianess::BIG;
 
 fn handle_client(mut stream : TcpStream) {
     println!("Stream: {}", stream.local_addr().unwrap());
@@ -54,10 +59,17 @@ fn main() -> io::Result<()>{
     let hello = Packet::new(10, b"Hello World!".to_vec());
     let world = Packet::new(10, b"Hello World from me!".to_vec());
     client1.write_packet(&hello);
-    client1.write_packet(&hello);
-    client1.write_packet(&hello);
 
-    client2.write_packet(&world);
+    let us : u16 = 15;
+
+    let num = vec![100, 100 as u8];
+
+    let mut writer = PacketWriter::new(vec![]);
+    writer.write_u16(BIG, 258);
+
+    let number2 = Packet::new(1, writer.data);
+
+    client2.write_packet(&number2);
 
     server.join();
     Ok(())
